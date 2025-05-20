@@ -1,172 +1,129 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(ContactApp());
 }
 
-class MyApp extends StatelessWidget {
+class ContactApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Course Cards',
+      title: 'Contact List',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: CourseGridScreen(),
+      home: ContactListPage(),
     );
   }
 }
 
-class CourseGridScreen extends StatelessWidget {
-  final List<Course> courses = [
-    Course(
-      title: "Full Stack Web Development with JavaScript (MERN)",
-      duration: "৪.৫ মাসের কোর্স",
-      hours: "৬০০+ ঘন্টার কোর্স",
-      image: "assets/bd.jpg", // ✅ FIXED
-    ),
-    Course(
-      title: "Full Stack Web Development with Python, Django & React",
-      duration: "৬ মাসের কোর্স",
-      hours: "৮০০+ ঘন্টার কোর্স",
-      image: "assets/japan.png",
-    ),
-    Course(
-      title: "App Development with Flutter",
-      duration: "৫ মাসের কোর্স",
-      hours: "৫৫০+ ঘন্টার কোর্স",
-      image: "assets/france.png",
-    ),
-    Course(
-      title: "Full Stack Web Development with PHP, Laravel & Vue Js",
-      duration: "৫.৫ মাসের কোর্স",
-      hours: "৭০০+ ঘন্টার কোর্স",
-      image: "assets/turkey.png",
-    ),
-    Course(
-      title: "Full Stack Web Development with ASP.Net Core",
-      duration: "৫ মাসের কোর্স",
-      hours: "৬৫০+ ঘন্টার কোর্স",
-      image: "assets/arab.png",
-    ),
-    Course(
-      title: "SQA: Manual & Automated Testing",
-      duration: "৪ মাসের কোর্স",
-      hours: "৫৫০+ ঘন্টার কোর্স",
-      image: "assets/palestine.png",
-    ),
-  ];
+class Contact {
+  final String name;
+  final String number;
+
+  Contact(this.name, this.number);
+}
+
+class ContactListPage extends StatefulWidget {
+  @override
+  _ContactListPageState createState() => _ContactListPageState();
+}
+
+class _ContactListPageState extends State<ContactListPage> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _numberController = TextEditingController();
+  final List<Contact> _contacts = [];
+
+  void _addContact() {
+    String name = _nameController.text.trim();
+    String number = _numberController.text.trim();
+    if (name.isNotEmpty && number.isNotEmpty) {
+      setState(() {
+        _contacts.add(Contact(name, number));
+      });
+      _nameController.clear();
+      _numberController.clear();
+    }
+  }
+
+  void _deleteContact(int index) {
+    setState(() {
+      _contacts.removeAt(index);
+    });
+  }
+
+  void _showDeleteConfirmation(int index) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Confirmation'),
+        content: Text('Are you sure for Delete?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              _deleteContact(index);
+              Navigator.pop(context);
+            },
+            child: Text('Delete', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactTile(Contact contact, int index) {
+    return ListTile(
+      leading: Icon(Icons.person),
+      title: Text(contact.name),
+      subtitle: Text(contact.number),
+      trailing: Icon(Icons.call, color: Colors.blue),
+      onLongPress: () => _showDeleteConfirmation(index),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth > 600;
-              return GridView.count(
-                crossAxisCount: isWide ? 3 : 2,
-                childAspectRatio: 0.75, // Adjusted to reduce overflow
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                children: courses.map((course) => CourseCard(course)).toList(),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class Course {
-  final String title;
-  final String duration;
-  final String hours;
-  final String image;
-
-  Course({
-    required this.title,
-    required this.duration,
-    required this.hours,
-    required this.image,
-  });
-}
-
-class CourseCard extends StatelessWidget {
-  final Course course;
-
-  CourseCard(this.course);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shadowColor: Colors.black,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        children: [
-          // Top image
-          ClipRRect(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-            child: Image.asset(
-              course.image,
-              height: 100,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
-          ),
-          // Flexible content below
-          Flexible(
-            child: Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(course.duration,
-                        style:
-                        TextStyle(fontSize: 10, fontWeight: FontWeight.w600)),
-                    Text(course.hours,
-                        style:
-                        TextStyle(fontSize: 10, fontWeight: FontWeight.w600)),
-                    SizedBox(height: 6),
-                    Flexible(
-                      child: Expanded(
-                        child: Text(
-                          course.title,
-                          style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 6),
-                    Align(
-                      alignment: Alignment.bottomRight,
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        child: Text("বিস্তারিত দেখুন"),
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          textStyle: TextStyle(fontSize: 10),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
+      appBar: AppBar(title: Text('Contact List')),
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(),
               ),
             ),
-          ),
-        ],
+            SizedBox(height: 10),
+            TextField(
+              controller: _numberController,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: 'Number',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: _addContact,
+              child: Text('Add'),
+            ),
+            SizedBox(height: 10),
+            Expanded(
+              child: _contacts.isEmpty
+                  ? Center(child: Text('No contacts added yet.'))
+                  : ListView.builder(
+                itemCount: _contacts.length,
+                itemBuilder: (context, index) =>
+                    _buildContactTile(_contacts[index], index),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
